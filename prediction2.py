@@ -128,15 +128,15 @@ def main(argv):
     # Make some predictions using the newly trained model.
     #DBの呼び出し
     import _mysql
-    db=_mysql.connect("localhost","root","","prediction_api")
+    db=_mysql.connect("192.168.33.10","root","","prediction_api")
         
-      sql = "select * from users"
-      cursor.execute(sql)
-      records = cursor.fetchall()
-      for record in records:
-          print (record)
-      cursor.close()
-      connector.close()
+    sql = "select * from users"
+    cursor.execute(sql)
+    records = cursor.fetchall()
+    for record in records:
+        print (record)
+    cursor.close()
+    connector.close()
 
     print_header('Making some predictions')
     for sample_text in ['hello', 'good']:
