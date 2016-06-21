@@ -128,7 +128,7 @@ def main(argv):
     # Make some predictions using the newly trained model.
     #DBの呼び出し
     import _mysql
-    db=_mysql.connect("192.168.33.10","root","","prediction_api")
+    db=_mysql.connect("10.0.1.75","jobhunt","jobhuntpasswd","jobhunt")
         
     sql = "select * from users"
     cursor.execute(sql)
@@ -139,7 +139,7 @@ def main(argv):
     connector.close()
 
     print_header('Making some predictions')
-    for sample_text in ['hello', 'good']:
+    for sample_text in ['志望動機はなんですか']:
       body = {'input': {'csvInstance': [sample_text]}}
       result = papi.predict(
         body=body, id=flags.model_id, project=flags.project_id).execute()

@@ -131,19 +131,22 @@ def main(argv):
   
     if __name__ == "__main__":
   
-      connector = MySQLdb.connect(host="localhost", db="jobhunt2", user="root", passwd="root", charset="utf8")
+      connector = MySQLdb.connect(host="10.0.1.75", db="jobhunt", user="jobhunt", passwd="jobhuntpasswd", charset="utf8")
       cursor = connector.cursor()
         
-      sql = "select * from users"
+      sql = "select name from users"
+      #sql2 ="INSERT INTO jobhunt.users (id, name) VALUES (2,2)"
       cursor.execute(sql)
       records = cursor.fetchall()
       for record in records:
-          print (record)
+          print (record[0])
       cursor.close()
       connector.close()
+      #tst
+      print('インサート完了')
 
     print_header('Making some predictions')
-    for sample_text in ['hello', 'good']:
+    for sample_text in [print (record[0]), 'good']:
       body = {'input': {'csvInstance': [sample_text]}}
       result = papi.predict(
         body=body, id=flags.model_id, project=flags.project_id).execute()
