@@ -135,6 +135,7 @@ def main(argv):
       cursor = connector.cursor()
         
       sql = "select name from users"
+      #sql2 = "INSERT INTO users (id, name) VALUES (5,3)"
       #sql2 ="INSERT INTO jobhunt.users (id, name) VALUES (2,2)"
       cursor.execute(sql)
       records = cursor.fetchall()
@@ -143,10 +144,38 @@ def main(argv):
       cursor.close()
       connector.close()
       #tst
-      print('インサート完了')
+      print('呼びだし完了')
+    #DBの呼び出し
+    import MySQLdb
 
+    if __name__ == "__main__":
+
+      connector = MySQLdb.connect(host="10.0.1.75", db="jobhunt", user="jobhunt", passwd="jobhuntpasswd", charset="utf8")
+      cursor = connector.cursor()
+
+      #sql = "select name from users"
+      #sql = 'INSERT INTO users (id, name) VALUES (%d, %s)', (12, "keiuske")
+      #sql2 ="INSERT INTO jobhunt.users (id, name) VALUES (2,2)"
+      cursor.execute('insert into tests (name) values ("なぜ消えるのだ?")')
+      #cursor.execute('insert into tests (name) values ("なぜ消えるのだ")')
+      #cursor.execute('insert into tests (name) values (%s)', ("keisuke"))
+      #cursor.execute(sql)
+      # select
+      cursor.execute('select * from tests')
+      row = cursor.fetchone()
+
+      # 出力
+      for i in row:
+        print(i)
+      
+      cursor.close()
+      connector.commit()
+      connector.close()
+      #tst
+      print('インサート完了')
+    
     print_header('Making some predictions')
-    for sample_text in [print (record[0]), 'good']:
+    for sample_text in [record[0]]:
       body = {'input': {'csvInstance': [sample_text]}}
       result = papi.predict(
         body=body, id=flags.model_id, project=flags.project_id).execute()
