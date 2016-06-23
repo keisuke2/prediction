@@ -230,7 +230,8 @@ def main(argv):
       #sql = "select name from users"
       #sql = 'INSERT INTO users (id, name) VALUES (%d, %s)', (12, "keiuske")
       #sql2 ="INSERT INTO jobhunt.users (id, name) VALUES (2,2)"
-      cursor.execute('insert into tests (name) values (%s)',([evaluate]))
+      #cursor.execute('insert into tests (name) values (%s)',([evaluate]))
+      cursor.execute('UPDATE tests SET name  = (%s) WHERE name = "なぜ消えるのだ?"',([evaluate]))
       #cursor.execute('insert into tests (name) values ("なぜ消えるのだ")')
       #cursor.execute('insert into tests (name) values (%s)', ("keisuke"))
       #cursor.execute(sql)
