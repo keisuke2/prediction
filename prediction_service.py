@@ -16,22 +16,16 @@
 # limitations under the License.
 
 """Simple command-line sample for the Google Prediction API
-
 Command-line application that trains on your input data. This sample does
 the same thing as the Hello Prediction! example. You might want to run
 the setup.sh script to load the sample data to Google Storage.
-
 Usage:
-  $ python prediction.py "bucket/object" "model_id" "project_id"
-
+  $ python prediction_service.py "bucket/object" "model_id" "project_id" "my-xxxxx.json"
 You can also get help on all the command-line flags the program understands
 by running:
-
-  $ python prediction.py --help
-
+  $ python prediction_service.py --help
 To get detailed log output run:
-
-  $ python prediction.py --logging_level=DEBUG
+  $ python prediction_service.py --logging_level=DEBUG
 """
 from __future__ import print_function
 
@@ -40,28 +34,34 @@ __author__ = ('jcgregorio@google.com (Joe Gregorio), '
 
 import argparse
 import os
-import pprint
+from pprint import pprint as pp
 import sys
 import time
 
+sys.path.append( os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib') )
+
+import httplib2
 from apiclient import discovery
 from apiclient import sample_tools
 from oauth2client import client
-
+from oauth2client.service_account import ServiceAccountCredentials
+from googleapiclient import discovery
+from oauth2client import tools
 
 # Time to wait (in seconds) between successive checks of training status.
 SLEEP_TIME = 10
-
+scopes=['https://www.googleapis.com/auth/prediction','https://www.googleapis.com/auth/devstorage.read_only']
 
 # Declare command-line flags.
 argparser = argparse.ArgumentParser(add_help=False)
 argparser.add_argument('object_name',
-    help='Full Google Storage path of csv data (ex bucket/object)')
+    help='jobhunt_prediction/jobhunt.txt')
 argparser.add_argument('model_id',
-    help='Model Id of your choosing to name trained model')
+    help='jobhuntidentifier')
 argparser.add_argument('project_id',
-    help='Model Id of your choosing to name trained model')
-
+    help='micro-root-133723')
+argparser.add_argument('credential',
+    help='client_secrets.json')
 
 def print_header(line):
   '''Format and print header block sized to length of line'''
@@ -71,17 +71,24 @@ def print_header(line):
   print(line)
   print(header_line)
 
-
 def main(argv):
-  # If you previously ran this app with an earlier version of the API
-  # or if you change the list of scopes below, revoke your app's permission
-  # here: https://accounts.google.com/IssuedAuthSubTokens
-  # Then re-run the app to re-authorize it.
-  service, flags = sample_tools.init(
-      argv, 'prediction', 'v1.6', __doc__, __file__, parents=[argparser],
-      scope=(
-          'https://www.googleapis.com/auth/prediction',
-          'https://www.googleapis.com/auth/devstorage.read_only'))
+  # create flags
+  parents=[argparser]
+  parent_parsers = [tools.argparser]
+  parent_parsers.extend(parents)
+  parser = argparse.ArgumentParser(
+      description=__doc__,
+      formatter_class=argparse.RawDescriptionHelpFormatter,
+      parents=parent_parsers)
+  flags = parser.parse_args(argv[1:])
+
+  credential_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), flags.credential)
+
+  credentials = ServiceAccountCredentials.from_json_keyfile_name(
+    credential_file, scopes=scopes)
+
+  http = credentials.authorize(http = httplib2.Http())
+  service = discovery.build('prediction', 'v1.6', http=http)
 
   try:
     # Get access to the Prediction API.
@@ -91,14 +98,14 @@ def main(argv):
     print_header('Fetching list of first ten models')
     result = papi.list(maxResults=10, project=flags.project_id).execute()
     print('List results:')
-    pprint.pprint(result)
+    pp(result)
 
     # Start training request on a data set.
     print_header('Submitting model training request')
     body = {'id': flags.model_id, 'storageDataLocation': flags.object_name}
     start = papi.insert(body=body, project=flags.project_id).execute()
     print('Training results:')
-    pprint.pprint(start)
+    pp(start)
 
     # Wait for the training to complete.
     print_header('Waiting for training to complete')
@@ -116,106 +123,23 @@ def main(argv):
 
       # Job has completed.
       print('Training completed:')
-      pprint.pprint(status)
+      pp(status)
       break
 
     # Describe model.
     print_header('Fetching model description')
     result = papi.analyze(id=flags.model_id, project=flags.project_id).execute()
     print('Analyze results:')
-    pprint.pprint(result)
+    pp(result)
 
     # Make some predictions using the newly trained model.
-    #DBの呼び出し
-    import MySQLdb
-  
-    if __name__ == "__main__":
-  
-      connector = MySQLdb.connect(host="10.0.1.75", db="jobhunt", user="jobhunt", passwd="jobhuntpasswd", charset="utf8")
-      cursor = connector.cursor()
-        
-      sql = "select name from users"
-      #sql2 = "INSERT INTO users (id, name) VALUES (5,3)"
-      #sql2 ="INSERT INTO jobhunt.users (id, name) VALUES (2,2)"
-      cursor.execute(sql)
-      records = cursor.fetchall()
-      for record in records:
-          print (record[0])
-      cursor.close()
-      connector.close()
-      #tst
-      print('呼びだし完了')
-    #DBの呼び出し
-    import MySQLdb
-
-    if __name__ == "__main__":
-
-      connector = MySQLdb.connect(host="10.0.1.75", db="jobhunt", user="jobhunt", passwd="jobhuntpasswd", charset="utf8")
-      cursor = connector.cursor()
-
-      #sql = "select name from users"
-      #sql = 'INSERT INTO users (id, name) VALUES (%d, %s)', (12, "keiuske")
-      #sql2 ="INSERT INTO jobhunt.users (id, name) VALUES (2,2)"
-      cursor.execute('insert into tests (name) values ("なぜ消えるのだ?")')
-      #cursor.execute('insert into tests (name) values ("なぜ消えるのだ")')
-      #cursor.execute('insert into tests (name) values (%s)', ("keisuke"))
-      #cursor.execute(sql)
-      # select
-      cursor.execute('select * from tests')
-      row = cursor.fetchone()
-
-      # 出力
-      for i in row:
-        print(i)
-      
-      cursor.close()
-      connector.commit()
-      connector.close()
-      #tst
-      print('インサート完了')
-    
     print_header('Making some predictions')
-    for sample_text in [record[0]]:
+    for sample_text in ['mucho bueno', 'bonjour, mon cher ami']:
       body = {'input': {'csvInstance': [sample_text]}}
       result = papi.predict(
         body=body, id=flags.model_id, project=flags.project_id).execute()
       print('Prediction results for "%s"...' % sample_text)
-      pprint.pprint(result)
-
-    if __name__ == "__main__":
-
-      connector = MySQLdb.connect(host="10.0.1.75", db="jobhunt", user="jobhunt", passwd="jobhuntpasswd", charset="utf8")
-      cursor = connector.cursor()
-	
-      #cursor.execute('insert into tests (name) values (result)')
-      #cursor.execute('insert into tests (name) values ("なぜ消えるのだ")')
-      #cursor.execute(sql)
-      # select
-      cursor.execute('select * from tests')
-      row = cursor.fetchone()
-
-      # 出力
-      for i in row:
-        print(i)
-
-      cursor.close()
-      connector.commit()
-      connector.close()
-      #tst
-      print('インサート完了')
-      ##pprint.pprint(result)
-     # print (result)
-      import json
-      array = json.dumps(result)
-      #array = json.dumps({u'label': u'true', u'score': u'0.384615'})
-      #data['outputMulti']=[{u'score': u'0.384615', u'label': u'true'}, {u'score': u'0.615385', u'label': u'false'}]
-      data=json.loads(array)
-      #print (data['outputMulti'])      
-      #from pprint import pprint as pp
-      #pp(result)
-      data2 = data['outputMulti']
-      print(data2)
-      print(data2[0]['score'])
+      pp(result)
 
     # Delete model.
     print_header('Deleting model')
@@ -228,4 +152,4 @@ def main(argv):
 
 
 if __name__ == '__main__':
-  main(sys.argv)
+    main(sys.argv)
