@@ -215,7 +215,40 @@ def main(argv):
       #pp(result)
       data2 = data['outputMulti']
       print(data2)
+      print(data2[0]['label'])
       print(data2[0]['score'])
+      evaluate = data2[0]['label']
+      score = data2[0]['score']
+       #DBの呼び出し
+    import MySQLdb
+
+    if __name__ == "__main__":
+
+      connector = MySQLdb.connect(host="10.0.1.75", db="jobhunt", user="jobhunt", passwd="jobhuntpasswd", charset="utf8")
+      cursor = connector.cursor()
+
+      #sql = "select name from users"
+      #sql = 'INSERT INTO users (id, name) VALUES (%d, %s)', (12, "keiuske")
+      #sql2 ="INSERT INTO jobhunt.users (id, name) VALUES (2,2)"
+      cursor.execute('insert into tests (name) values (%s)',([evaluate]))
+      #cursor.execute('insert into tests (name) values ("なぜ消えるのだ")')
+      #cursor.execute('insert into tests (name) values (%s)', ("keisuke"))
+      #cursor.execute(sql)
+      # select
+      cursor.execute('select * from tests')
+      row = cursor.fetchone()
+
+      # 出力
+      for i in row:
+        print(i)
+
+      cursor.close()
+      connector.commit()
+      connector.close()
+      #tst
+      print('インサート完了')
+
+
 
     # Delete model.
     print_header('Deleting model')
