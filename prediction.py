@@ -191,7 +191,7 @@ def main(argv):
       #cursor.execute('insert into tests (name) values ("なぜ消えるのだ")')
       #cursor.execute(sql)
       # select
-      cursor.execute('select * from tests')
+      cursor.execute('select * from posts where company_id=3')
       row = cursor.fetchone()
 
       # 出力
@@ -231,12 +231,14 @@ def main(argv):
       #sql = 'INSERT INTO users (id, name) VALUES (%d, %s)', (12, "keiuske")
       #sql2 ="INSERT INTO jobhunt.users (id, name) VALUES (2,2)"
       #cursor.execute('insert into tests (name) values (%s)',([evaluate]))
-      cursor.execute('UPDATE tests SET name  = (%s) WHERE name = "なぜ消えるのだ?"',([evaluate]))
+      cursor.execute('UPDATE posts SET evaluate  = (%s) WHERE company_id = 3',([evaluate]))
+      cursor.execute('UPDATE posts SET score  = (%s) WHERE company_id = 3',([score]))
+      #cursor.execute('UPDATE posts SET evaluate  = (%s),score  = (%s) WHERE company_id = 3',([evaluate]),([score]))
       #cursor.execute('insert into tests (name) values ("なぜ消えるのだ")')
       #cursor.execute('insert into tests (name) values (%s)', ("keisuke"))
       #cursor.execute(sql)
       # select
-      cursor.execute('select * from tests')
+      cursor.execute('select * from posts')
       row = cursor.fetchone()
 
       # 出力
