@@ -131,15 +131,77 @@ def main(argv):
     result = papi.analyze(id=flags.model_id, project=flags.project_id).execute()
     print('Analyze results:')
     pp(result)
+    
+    #DBの呼び出し
+    import MySQLdb
+
+    if __name__ == "__main__":
+
+      connector = MySQLdb.connect(host="10.0.1.75", db="jobhunt", user="jobhunt", passwd="jobhuntpasswd", charset="utf8")
+      cursor = connector.cursor()
+
+      sql = "select message from posts"
+      #sql2 = "INSERT INTO users (id, name) VALUES (5,3)"
+      #sql2 ="INSERT INTO jobhunt.users (id, name) VALUES (2,2)"
+      cursor.execute(sql)
+      records = cursor.fetchall()
+      for record in records:
+          print (record[0])
+      cursor.close()
+      connector.close()
+      #tst
+      print('呼びだし完了')
 
     # Make some predictions using the newly trained model.
     print_header('Making some predictions')
-    for sample_text in ['mucho bueno', 'bonjour, mon cher ami']:
+    for sample_text in [record[0]]:
       body = {'input': {'csvInstance': [sample_text]}}
       result = papi.predict(
         body=body, id=flags.model_id, project=flags.project_id).execute()
       print('Prediction results for "%s"...' % sample_text)
       pp(result)
+    
+
+      import json
+      array = json.dumps(result)
+      #array = json.dumps({u'label': u'true', u'score': u'0.384615'})
+      #data['outputMulti']=[{u'score': u'0.384615', u'label': u'true'}, {u'score': u'0.615385', u'label': u'false'}]
+      data=json.loads(array)
+      #print (data['outputMulti'])
+      #from pprint import pprint as pp
+      #pp(result)
+      data2 = data['outputMulti']
+      print(data2)
+      print(data2[0]['label'])
+      print(data2[0]['score'])
+      evaluate = data2[0]['label']
+      score = data2[0]['score']
+       #DBの呼び出し
+    import MySQLdb
+
+    if __name__ == "__main__":
+
+      connector = MySQLdb.connect(host="10.0.1.75", db="jobhunt", user="jobhunt", passwd="jobhuntpasswd", charset="utf8")
+      cursor = connector.cursor()
+      cursor.execute('UPDATE posts SET evaluate  = (%s) WHERE company_id = 3',([evaluate]))
+      cursor.execute('UPDATE posts SET score  = (%s) WHERE company_id = 3',([score]))
+      #cursor.execute('UPDATE posts SET evaluate  = (%s),score  = (%s) WHERE company_id = 3',([evaluate]),([score]))
+      #cursor.execute('insert into tests (name) values ("なぜ消えるのだ")')
+      #cursor.execute('insert into tests (name) values (%s)', ("keisuke"))
+      #cursor.execute(sql)
+      # select
+      cursor.execute('select * from posts')
+      row = cursor.fetchone()
+
+      # 出力
+      for i in row:
+        print(i)
+
+      cursor.close()
+      connector.commit()
+      connector.close()
+      #tst
+      print('インサート完了')
 
     # Delete model.
     print_header('Deleting model')
